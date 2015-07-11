@@ -14,6 +14,7 @@
 *.s
 *.so
 Doc/html/*
+generated/*
 output
 CMake-output
 CMakeFiles
@@ -35,4 +36,4 @@ build/local-config.mk
 *.pyo
 *.bak
 Makefile
-
+*cmake_install.cmake

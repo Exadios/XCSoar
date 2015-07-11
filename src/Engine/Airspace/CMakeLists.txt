@@ -1,0 +1,22 @@
+set(airspace_sources
+ 	  AirspacesTerrain.cpp
+    Airspace.cpp
+    AirspaceAltitude.cpp
+    AirspaceAircraftPerformance.cpp
+    AbstractAirspace.cpp
+    AirspaceCircle.cpp
+    AirspacePolygon.cpp
+    Airspaces.cpp
+    AirspaceIntersectSort.cpp
+    AirspaceNearestSort.cpp
+    AirspaceSoonestSort.cpp
+    Predicate/AirspacePredicate.cpp
+    Predicate/AirspacePredicateAircraftInside.cpp
+    Predicate/AirspacePredicateHeightRange.cpp
+    Predicate/OutsideAirspacePredicate.cpp
+    AirspaceVisitor.cpp
+    AirspaceIntersectionVisitor.cpp
+    AirspaceWarningConfig.cpp
+    AirspaceWarningManager.cpp
+    AirspaceWarning.cpp
+    AirspaceSorter.cpp)
