@@ -16,6 +16,7 @@
 Doc/html/*
 generated/*
 output
+out
 CMake-output
 CMakeFiles
 perf.data
@@ -37,3 +38,4 @@ build/local-config.mk
 *.bak
 Makefile
 *cmake_install.cmake
+.*.swp
