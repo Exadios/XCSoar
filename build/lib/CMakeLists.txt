@@ -1,6 +1,24 @@
 include_directories(${XCSOAR_SRC})
 add_definitions(-DHAVE_POSIX) # For POSIX only
 add_definitions(-DZLIB_CONST) # Make some of zlib const.
+add_definitions(-DUSE_FREETYPE)
+
+# These are for the 'UNIX' target
+set(GLX false)
+set(OPENGL true)
+set(FREETYPE true)
+set(HAVE_POSIX true)
+set(EGL false)
+set(ENABLE_SDL false)
+set(VFB false)
+set(USE_FB false)
+set(USE_SDL true)
+set(HAVE_WIN32 false)
+set(HAVE_CE false)
+set(USE_MEMORY_CANVAS ENABLE_SDL and not OPENGL)
+set(GLES2 false)
+set(GLSL ${GLES2})
+set(HAVE_PCM_PLAYER true)
 
 add_custom_target(lib DEPENDS Airspace
                               Async
@@ -16,7 +34,7 @@ add_custom_target(lib DEPENDS Airspace
                               Math
                               Os
                               Profile
-#                              Resource
+                              Resource
                               Route
                               Screen
                               Shape
@@ -31,6 +49,35 @@ add_custom_target(lib DEPENDS Airspace
 add_dependencies(lib generate)
 
 # TODO this needs to be moved downtree.
+add_custom_command(OUTPUT ${OUTPUT_INCLUDE}/resource.h
+                   COMMAND cat ${XCSOAR_SRC}/Resources.hpp | ${TOOLS_DIR}/MakeResourceDefines > ${OUTPUT_INCLUDE}/resource.h
+                   DEPENDS ${XCSOAR_SRC}/Resources.hpp
+                   DEPENDS ${TOOLS_DIR}/MakeResourceDefines
+                   VERBATIM
+                   )
+
+set(TARGET_CPPFLAGS -I${OUTPUT_INCLUDE} "-DHAVE_POSIX -DHAVE_STDINT_H -DHAVE_UNISTD_H -DHAVE_VASPRINTF -DRADIANS -DEYE_CANDY -DTESTING -DUSE_WGS84 -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC")
+set(OPENGL_CPPFLAGS "-DENABLE_OPENGL -DGL_GLEXT_PROTOTYPES")
+add_custom_command(OUTPUT ${OUTPUT_BASE}/XCSoar.rc
+                   COMMAND cat ${XCSOAR}/Data/XCSoar.rc | ${CMAKE_C_COMPILER} -E -o ${OUTPUT_BASE}/XCSoar.rc -I${OUTPUT_INCLUDE} ${TARGET_CPPFLAGS} ${OPENGL_CPPFLAGS} -
+                   DEPENDS ${XCSOAR}/Data/XCSoar.rc
+                   DEPENDS ${OUTPUT_INCLUDE}/resource.h
+                   VERBATIM)
+add_custom_command(OUTPUT ${OUTPUT_INCLUDE}/resource_data.h
+                   COMMAND perl ${TOOLS_DIR}/GenerateResources.pl ${OUTPUT_BASE}/XCSoar.rc > ${OUTPUT_INCLUDE}/resource_data.h
+                   DEPENDS ${OUTPUT_BASE}/XCSoar.rc
+                   DEPENDS ${TOOLS_DIR}/GenerateResources.pl
+                   VERBATIM)
+set_property(SOURCE ${OUTPUT_INCLUDE}/resource_data.h
+             PROPERTY GENERATED true)
+add_custom_command(OUTPUT ${OUTPUT_BASE}/build/lib/resources.a
+                   COMMAND perl ${TOOLS_DIR}/LinkResources.pl ${OUTPUT_BASE}/XCSoar.rc ${OUTPUT_BASE}/build/lib/resources.a as ${ASFLAGS} ar ${ARFLAGS}
+                   DEPENDS ${OUTPUT_BASE}/XCSoar.rc
+                   DEPENDS ${TOOLS_DIR}/LinkResources.pl
+                   VERBATIM)
+add_custom_target(resources ALL
+                  DEPENDS ${OUTPUT_INCLUDE}/resource_data.h)
+
 add_definitions(-DHAVE_POSIX
                 -DENABLE_OPENGL
                 -DGL_GLEXT_PROTOTYPES
@@ -44,6 +91,9 @@ add_definitions(-DHAVE_POSIX
                 -DHAVE_VASPRINTF
                 -DRADIANS
                 -DEYE_CANDY)
+set(ASFLAGS "-arch i386")
+set(ARFLAGS "-rcs")
+
 include_directories(SYSTEM /usr/include/SDL)
 
 set(UTIL_DIR ${XCSOAR_SRC}/Util)
@@ -100,6 +150,7 @@ set(TERRAIN_SRCS ${TERRAIN_DIR}/RasterBuffer.cpp
                  ${TERRAIN_DIR}/TerrainSettings.cpp)
 include_directories(${XCSOAR_SRC} ${TERRAIN_DIR} ${TERRAIN_DIR}/jasper)
 add_library(Terrain ${TERRAIN_SRCS})
+target_link_libraries(Terrain Jasper)
 
 set(MATH_DIR ${XCSOAR_SRC}/Math)
 set(MATH_SRCS ${MATH_DIR}/Angle.cpp
@@ -144,6 +195,7 @@ set(WAYPOINT_SRCS ${WAYPOINT_DIR}/WaypointVisitor.cpp
                   ${WAYPOINT_DIR}/Waypoint.cpp)
 include_directories(${XCSOAR_SRC} ${WAYPOINT_DIR})
 add_library(Waypoint ${WAYPOINT_SRCS})
+target_link_libraries(Waypoint Geo Math)
 
 set(ROUTE_DIR ${XCSOAR_SRC}/Engine/Route)
 set(ROUTE_SRCS ${ROUTE_DIR}/Config.cpp
@@ -158,6 +210,7 @@ set(ROUTE_SRCS ${ROUTE_DIR}/Config.cpp
                ${ROUTE_DIR}/ReachFan.cpp)
 include_directories(${XCSOAR_SRC} ${ROUTE_DIR} ${XCSOAR_SRC}/Engine)
 add_library(Route ${ROUTE_SRCS})
+target_link_libraries(Route Airspace)
 
 set(GLIDE_DIR ${XCSOAR_SRC}/Engine/GlideSolvers)
 set(GLIDE_SRCS ${GLIDE_DIR}/GlideSettings.cpp
@@ -273,6 +326,7 @@ set(TASK_SRCS ${TASK_DIR}/Shapes/FAITriangleSettings.cpp
               ${TASK_DIR}/Stats/StartStats.cpp)
 include_directories(${XCSOAR_SRC} ${TASK_DIR})
 add_library(Task ${TASK_SRCS})
+target_link_libraries(Task Glide Time)
 
 set(AIRSPACE_DIR ${XCSOAR_SRC}/Engine/Airspace)
 set(ENGINE_DIR   ${XCSOAR_SRC}/Engine)
@@ -398,6 +452,24 @@ set(DRIVER_SRCS ${VOLKSLOGGER_SRCS}
                 ${OTHER_SRCS})
 include_directories(${XCSOAR_SRC} ${DRIVER_DIR})
 add_library(Driver ${DRIVER_SRCS})
+target_link_libraries(Driver Port)
+
+set(PORT_DIR ${XCSOAR_SRC}/Device/Port)
+set(PORT_SRCS ${PORT_DIR}/Port.cpp
+              ${PORT_DIR}/BufferedPort.cpp
+              ${PORT_DIR}/SocketPort.cpp
+              ${PORT_DIR}/TCPPort.cpp
+              ${PORT_DIR}/K6BtPort.cpp
+              ${PORT_DIR}/DumpPort.cpp
+              ${PORT_DIR}/NullPort.cpp
+              ${PORT_DIR}/TCPClientPort.cpp)
+if(HAVE_POSIX)
+set(PORT_SRCS ${PORT_SRCS}
+              ${PORT_DIR}/TTYEnumerator.cpp
+              ${PORT_DIR}/TTYPort.cpp)
+endif(HAVE_POSIX)
+add_library(Port ${PORT_SRCS})
+target_link_libraries(Port Os)
 
 set(SHAPE_DIR ${XCSOAR_SRC}/Topography/shapelib)
 set(SHAPE_SRCS ${SHAPE_DIR}/mapstring.c
@@ -422,6 +494,7 @@ set(THREAD_SRCS ${XCSOAR_SRC}/Poco/RWLock.cpp
                 ${THREAD_DIR}/Debug.cpp)
 include_directories(${XCSOAR_SRC} ${THREAD_DIR})
 add_library(Thread ${THREAD_SRCS})
+target_link_libraries(Thread pthread)
 
 set(OS_DIR ${XCSOAR_SRC}/OS)
 set(OS_SRCS	${OS_DIR}/Clock.cpp
@@ -467,9 +540,11 @@ set(WIDGET_SRCS ${WIDGET_DIR}/Widget.cpp
                 ${WIDGET_DIR}/DockWindow.cpp)
 include_directories(${XCSOAR_SRC} ${WIDGET_DIR})
 add_library(Widget ${WIDGET_SRCS})
+target_link_libraries(Widget Form Datafield)
 
 include_directories(${XCSOAR_SRC} ${XCSOAR_SRC}/Profile)
 add_library(Profile ${XCSOAR_SRC}/Profile/ProfileMap.cpp)
+target_link_libraries(Profile Io)
 
 set(JASPER_DIR ${XCSOAR_SRC}/Terrain/jasper)
 set(JASPER_SRCS ${JASPER_DIR}/base/jas_debug.c
@@ -500,6 +575,16 @@ include_directories(${XCSOAR_SRC} ${JASPER_DIR})
 add_library(Jasper ${JASPER_SRCS})
 set_target_properties(Jasper
                       PROPERTIES COMPILE_FLAGS "-Wno-unused-but-set-parameter -Wno-unused-but-set-variable")
+target_link_libraries(Jasper Zzip)
+
+set(ZZIP_DIR ${XCSOAR_SRC}/zzip)
+set(ZZIP_SRCS ${ZZIP_DIR}/fetch.c
+              ${ZZIP_DIR}/file.c
+              ${ZZIP_DIR}/plugin.c
+              ${ZZIP_DIR}/zip.c
+              ${ZZIP_DIR}/stat.c)
+add_library(Zzip ${ZZIP_SRCS})
+target_link_libraries(Zzip z)
 
 set(FORM_DIR ${XCSOAR_SRC}/Form)
 set(FORM_SRCS	${XCSOAR_SRC}/UIUtil/KineticManager.cpp
@@ -531,6 +616,7 @@ set(FORM_SRCS	${XCSOAR_SRC}/UIUtil/KineticManager.cpp
               ${FORM_DIR}/Util.cpp)
 include_directories(${XCSOAR_SRC} ${FORM_DIR})
 add_library(Form ${FORM_SRCS})
+target_link_libraries(Form Dialogs Screen)
 
 set(DATAFIELD_DIR ${XCSOAR_SRC}/Form/DataField)
 set(DATAFIELD_SRCS 	${DATAFIELD_DIR}/Base.cpp
@@ -551,6 +637,157 @@ set(DATAFIELD_SRCS 	${DATAFIELD_DIR}/Base.cpp
 include_directories(${XCSOAR_SRC} ${DATAFIELD_DIR})
 add_library(Datafield ${DATAFIELD_SRCS})
 
+set(DIALOGS_DIR ${XCSOAR_SRC}/Dialogs)
+set(DIALOGS_SRCS ${DIALOGS_DIR}/XML.cpp
+                 ${DIALOGS_DIR}/Inflate.cpp
+                 ${DIALOGS_DIR}/Message.cpp
+                 ${DIALOGS_DIR}/ListPicker.cpp
+                 ${DIALOGS_DIR}/JobDialog.cpp
+                 ${DIALOGS_DIR}/WidgetDialog.cpp
+                 ${DIALOGS_DIR}/FileManager.cpp
+                 ${DIALOGS_DIR}/Device/DeviceEditWidget.cpp
+                 ${DIALOGS_DIR}/Device/DeviceListDialog.cpp
+                 ${DIALOGS_DIR}/Device/PortMonitor.cpp
+                 ${DIALOGS_DIR}/Device/ManageCAI302Dialog.cpp
+                 ${DIALOGS_DIR}/Device/CAI302/UnitsEditor.cpp
+                 ${DIALOGS_DIR}/Device/CAI302/WaypointUploader.cpp
+                 ${DIALOGS_DIR}/Device/ManageFlarmDialog.cpp
+                 ${DIALOGS_DIR}/Device/LX/ManageV7Dialog.cpp
+                 ${DIALOGS_DIR}/Device/LX/V7ConfigWidget.cpp
+                 ${DIALOGS_DIR}/Device/LX/ManageNanoDialog.cpp
+                 ${DIALOGS_DIR}/Device/LX/NanoConfigWidget.cpp
+                 ${DIALOGS_DIR}/Device/LX/ManageLX16xxDialog.cpp
+                 ${DIALOGS_DIR}/Device/Vega/VegaParametersWidget.cpp
+                 ${DIALOGS_DIR}/Device/Vega/VegaConfigurationDialog.cpp
+                 ${DIALOGS_DIR}/Device/Vega/VegaDemoDialog.cpp
+                 ${DIALOGS_DIR}/Device/Vega/VoiceSettingsDialog.cpp
+                 ${DIALOGS_DIR}/Device/Vega/SwitchesDialog.cpp
+                 ${DIALOGS_DIR}/Device/FLARM/ConfigWidget.cpp
+                 ${DIALOGS_DIR}/MapItemListDialog.cpp
+                 ${DIALOGS_DIR}/MapItemListSettingsDialog.cpp
+                 ${DIALOGS_DIR}/MapItemListSettingsPanel.cpp
+                 ${DIALOGS_DIR}/ColorListDialog.cpp
+                 ${DIALOGS_DIR}/Airspace/dlgAirspace.cpp
+                 ${DIALOGS_DIR}/Airspace/dlgAirspacePatterns.cpp
+                 ${DIALOGS_DIR}/Airspace/dlgAirspaceDetails.cpp
+                 ${DIALOGS_DIR}/Airspace/AirspaceList.cpp
+                 ${DIALOGS_DIR}/Airspace/AirspaceCRendererSettingsDialog.cpp
+                 ${DIALOGS_DIR}/Airspace/AirspaceCRendererSettingsPanel.cpp
+                 ${DIALOGS_DIR}/Airspace/dlgAirspaceWarnings.cpp
+                 ${DIALOGS_DIR}/Settings/WindSettingsPanel.cpp
+                 ${DIALOGS_DIR}/Settings/WindSettingsDialog.cpp
+                 ${DIALOGS_DIR}/Settings/dlgBasicSettings.cpp
+                 ${DIALOGS_DIR}/Settings/dlgConfiguration.cpp
+                 ${DIALOGS_DIR}/Settings/dlgConfigInfoboxes.cpp
+                 ${DIALOGS_DIR}/Traffic/TrafficList.cpp
+                 ${DIALOGS_DIR}/Traffic/FlarmTrafficDetails.cpp
+                 ${DIALOGS_DIR}/Traffic/TeamCodeDialog.cpp
+                 ${DIALOGS_DIR}/dlgAnalysis.cpp
+                 ${DIALOGS_DIR}/dlgBrightness.cpp
+                 ${DIALOGS_DIR}/dlgChecklist.cpp
+                 ${DIALOGS_DIR}/Plane/PlaneListDialog.cpp
+                 ${DIALOGS_DIR}/Plane/PlaneDetailsDialog.cpp
+                 ${DIALOGS_DIR}/Plane/PlanePolarDialog.cpp
+                 ${DIALOGS_DIR}/Plane/PolarShapeEditWidget.cpp
+                 ${DIALOGS_DIR}/DataField.cpp
+                 ${DIALOGS_DIR}/ComboPicker.cpp
+                 ${DIALOGS_DIR}/FilePicker.cpp
+                 ${DIALOGS_DIR}/HelpDialog.cpp
+                 ${DIALOGS_DIR}/dlgInfoBoxAccess.cpp
+                 ${DIALOGS_DIR}/ReplayDialog.cpp
+                 ${DIALOGS_DIR}/dlgSimulatorPrompt.cpp
+                 ${DIALOGS_DIR}/SimulatorPromptWindow.cpp
+                 ${DIALOGS_DIR}/dlgStartup.cpp
+                 ${DIALOGS_DIR}/dlgStatus.cpp
+                 ${DIALOGS_DIR}/StatusPanels/StatusPanel.cpp
+                 ${DIALOGS_DIR}/StatusPanels/FlightStatusPanel.cpp
+                 ${DIALOGS_DIR}/StatusPanels/SystemStatusPanel.cpp
+                 ${DIALOGS_DIR}/StatusPanels/TaskStatusPanel.cpp
+                 ${DIALOGS_DIR}/StatusPanels/RulesStatusPanel.cpp
+                 ${DIALOGS_DIR}/StatusPanels/TimesStatusPanel.cpp
+                 ${DIALOGS_DIR}/Waypoint/WaypointInfoWidget.cpp
+                 ${DIALOGS_DIR}/Waypoint/WaypointCommandsWidget.cpp
+                 ${DIALOGS_DIR}/Waypoint/dlgWaypointDetails.cpp
+                 ${DIALOGS_DIR}/Waypoint/Manager.cpp
+                 ${DIALOGS_DIR}/Waypoint/dlgWaypointEdit.cpp
+                 ${DIALOGS_DIR}/Waypoint/WaypointList.cpp
+                 ${DIALOGS_DIR}/Waypoint/NearestWaypoint.cpp
+                 ${DIALOGS_DIR}/Settings/Panels/AirspaceConfigPanel.cpp
+                 ${DIALOGS_DIR}/Settings/Panels/ExperimentalConfigPanel.cpp
+                 ${DIALOGS_DIR}/Settings/Panels/GaugesConfigPanel.cpp
+                 ${DIALOGS_DIR}/Settings/Panels/VarioConfigPanel.cpp
+                 ${DIALOGS_DIR}/Settings/Panels/GlideComputerConfigPanel.cpp
+                 ${DIALOGS_DIR}/Settings/Panels/WindConfigPanel.cpp
+                 ${DIALOGS_DIR}/Settings/Panels/InfoBoxesConfigPanel.cpp
+                 ${DIALOGS_DIR}/Settings/Panels/InterfaceConfigPanel.cpp
+                 ${DIALOGS_DIR}/Settings/Panels/LayoutConfigPanel.cpp
+                 ${DIALOGS_DIR}/Settings/Panels/LoggerConfigPanel.cpp
+                 ${DIALOGS_DIR}/Settings/Panels/MapDisplayConfigPanel.cpp
+                 ${DIALOGS_DIR}/Settings/Panels/PagesConfigPanel.cpp
+                 ${DIALOGS_DIR}/Settings/Panels/RouteConfigPanel.cpp
+                 ${DIALOGS_DIR}/Settings/Panels/SafetyFactorsConfigPanel.cpp
+                 ${DIALOGS_DIR}/Settings/Panels/SiteConfigPanel.cpp
+                 ${DIALOGS_DIR}/Settings/Panels/SymbolsConfigPanel.cpp
+                 ${DIALOGS_DIR}/Settings/Panels/TaskRulesConfigPanel.cpp
+                 ${DIALOGS_DIR}/Settings/Panels/TaskDefaultsConfigPanel.cpp
+                 ${DIALOGS_DIR}/Settings/Panels/ScoringConfigPanel.cpp
+                 ${DIALOGS_DIR}/Settings/Panels/TerrainDisplayConfigPanel.cpp
+                 ${DIALOGS_DIR}/Settings/Panels/UnitsConfigPanel.cpp
+                 ${DIALOGS_DIR}/Settings/Panels/TimeConfigPanel.cpp
+                 ${DIALOGS_DIR}/Settings/Panels/WaypointDisplayConfigPanel.cpp
+                 ${DIALOGS_DIR}/Settings/Panels/TrackingConfigPanel.cpp
+                 ${DIALOGS_DIR}/Task/Widgets/ObservationZoneEditWidget.cpp
+                 ${DIALOGS_DIR}/Task/Widgets/CylinderZoneEditWidget.cpp
+                 ${DIALOGS_DIR}/Task/Widgets/LineSectorZoneEditWidget.cpp
+                 ${DIALOGS_DIR}/Task/Widgets/SectorZoneEditWidget.cpp
+                 ${DIALOGS_DIR}/Task/Widgets/KeyholeZoneEditWidget.cpp
+                 ${DIALOGS_DIR}/Task/Manager/TaskMapWindow.cpp
+                 ${DIALOGS_DIR}/Task/Manager/TaskManagerDialog.cpp
+                 ${DIALOGS_DIR}/Task/Manager/TaskClosePanel.cpp
+                 ${DIALOGS_DIR}/Task/Manager/TaskEditPanel.cpp
+                 ${DIALOGS_DIR}/Task/Manager/TaskPropertiesPanel.cpp
+                 ${DIALOGS_DIR}/Task/Manager/TaskMiscPanel.cpp
+                 ${DIALOGS_DIR}/Task/Manager/TaskActionsPanel.cpp
+                 ${DIALOGS_DIR}/Task/Manager/TaskListPanel.cpp
+                 ${DIALOGS_DIR}/Task/Manager/TaskCalculatorPanel.cpp
+                 ${DIALOGS_DIR}/Task/OptionalStartsDialog.cpp
+                 ${DIALOGS_DIR}/Task/TaskPointDialog.cpp
+                 ${DIALOGS_DIR}/Task/MutateTaskPointDialog.cpp
+                 ${DIALOGS_DIR}/Task/dlgTaskHelpers.cpp
+                 ${DIALOGS_DIR}/Task/TargetDialog.cpp
+                 ${DIALOGS_DIR}/Task/AlternatesListDialog.cpp
+                 ${DIALOGS_DIR}/NumberEntry.cpp
+                 ${DIALOGS_DIR}/TextEntry.cpp
+                 ${DIALOGS_DIR}/KnobTextEntry.cpp
+                 ${DIALOGS_DIR}/TouchTextEntry.cpp
+                 ${DIALOGS_DIR}/TimeEntry.cpp
+                 ${DIALOGS_DIR}/GeoPointEntry.cpp
+                 ${DIALOGS_DIR}/Weather/RASPDialog.cpp
+                 ${DIALOGS_DIR}/dlgCredits.cpp
+                 ${DIALOGS_DIR}/dlgQuickMenu.cpp)
+
+if(HAVE_PCM_PLAYER)
+set(DIALOG_SOURCES ${DIALOGS_SRCS}
+                   ${DIALOGS_DIR}/Settings/Panels/AudioVarioConfigPanel.cpp)
+endif(HAVE_PCM_PLAYER)
+
+if(HAVE_HTTP)
+set(DIALOGS_SRCS ${DIALOGS_SRCS}
+                 ${DIALOGS_DIR}/Weather/NOAAList.cpp
+                 ${DIALOGS_DIR}/Weather/NOAADetails.cpp)
+endif(HAVE_HTTP)
+add_library(Dialogs ${DIALOGS_SRCS})
+target_link_libraries(Dialogs Contest Widget Driver)
+
+set(TIME_DIR ${XCSOAR_SRC}/Time)
+set(TIME_SRCS ${TIME_DIR}/DeltaTime.cpp
+              ${TIME_DIR}/WrapClock.cpp
+              ${TIME_DIR}/LocalTime.cpp
+              ${TIME_DIR}/BrokenTime.cpp
+              ${TIME_DIR}/BrokenDate.cpp
+              ${TIME_DIR}/BrokenDateTime.cpp)
+add_library(Time ${TIME_SRCS})
+
 set(SCREEN_DIR ${XCSOAR_SRC}/Screen)
 set(SCREEN_SRCS ${SCREEN_DIR}/Debug.cpp
                 ${SCREEN_DIR}/ProgressBar.cpp
@@ -564,6 +801,31 @@ set(SCREEN_SRCS ${SCREEN_DIR}/Debug.cpp
                 ${SCREEN_DIR}/BufferWindow.cpp
                 ${SCREEN_DIR}/DoubleBufferWindow.cpp
                 ${SCREEN_DIR}/SingleWindow.cpp)
+
+set(SCREEN_CUSTOM_SRCS ${SCREEN_DIR}/Custom/Pen.cpp
+                       ${SCREEN_DIR}/Custom/Timer.cpp
+                       ${SCREEN_DIR}/Custom/TextWindow.cpp
+                       ${SCREEN_DIR}/Custom/LargeTextWindow.cpp
+                       ${SCREEN_DIR}/Custom/ButtonWindow.cpp
+                       ${SCREEN_DIR}/Custom/Window.cpp
+                       ${SCREEN_DIR}/Custom/WList.cpp
+                       ${SCREEN_DIR}/Custom/ContainerWindow.cpp
+                       ${SCREEN_DIR}/Custom/CheckBox.cpp
+                       ${SCREEN_DIR}/Custom/EditWindow.cpp
+                       ${SCREEN_DIR}/Custom/TopWindow.cpp
+                       ${SCREEN_DIR}/Custom/SingleWindow.cpp
+                       ${SCREEN_DIR}/Custom/MoreCanvas.cpp)
+
+set(SCREEN_SDL_SRCS	${SCREEN_DIR}/Custom/Files.cpp
+                    ${SCREEN_DIR}/Custom/Bitmap.cpp
+                    ${SCREEN_DIR}/Custom/ResourceBitmap.cpp
+                    ${SCREEN_DIR}/Custom/LibPNG.cpp
+                    ${SCREEN_DIR}/Custom/LibJPEG.cpp
+                    ${SCREEN_DIR}/SDL/Window.cpp
+                    ${SCREEN_DIR}/SDL/TopWindow.cpp
+                    ${SCREEN_DIR}/SDL/SingleWindow.cpp
+                    ${SCREEN_DIR}/SDL/TopCanvas.cpp
+                    ${SCREEN_DIR}/SDL/Init.cpp)
 
 set(FREETYPE_SRCS ${SCREEN_DIR}/FreeType/Font.cpp
                   ${SCREEN_DIR}/FreeType/Init.cpp)
@@ -589,14 +851,21 @@ set(OPENGL_SRCS ${SCREEN_DIR}/Custom/Cache.cpp
                 ${SCREEN_DIR}/OpenGL/Shapes.cpp
                 ${SCREEN_DIR}/OpenGL/Surface.cpp
                 ${SCREEN_DIR}/OpenGL/Triangulate.cpp)
+
 include_directories(${XCSOAR_SRC}
                     ${SCREEN_DIR}
                     ${SCREEN_DIR}/FreeType
                     ${SCREEN_DIR}/OpenGL)
-add_library(Screen ${SCREEN_SRCS} ${FREETYPE_SRCS} ${OPENGL_SRCS})
+add_library(Screen ${SCREEN_SRCS}
+                   ${SCREEN_CUSTOM_SRCS}
+                   ${SCREEN_SDL_SRCS}
+                   ${FREETYPE_SRCS}
+                   ${OPENGL_SRCS})
 # TODO Find this package.
 set_target_properties(Screen
                       PROPERTIES COMPILE_FLAGS "-isystem /usr/include/freetype2")
+target_link_libraries(Screen Resource GL pthread freetype)
+add_dependencies(Screen resources)
 
 set(EVENT_DIR ${XCSOAR_SRC}/Event)
 set(EVENT_SRCS 	${EVENT_DIR}/Shared/Timer.cpp
@@ -604,12 +873,16 @@ set(EVENT_SRCS 	${EVENT_DIR}/Shared/Timer.cpp
                 ${EVENT_DIR}/Globals.cpp
                 ${EVENT_DIR}/Idle.cpp
                 ${EVENT_DIR}/DelayedNotify.cpp
-                ${EVENT_DIR}/Notify.cpp)
+                ${EVENT_DIR}/Notify.cpp
+                ${EVENT_DIR}/Linux/SignalListener.cpp
+                ${EVENT_DIR}/SDL/Loop.cpp
+                ${EVENT_DIR}/SDL/Queue.cpp)
 include_directories(${XCSOAR_SRC} ${EVENT_DIR})
 add_library(Event ${EVENT_SRCS})
+target_link_libraries(Event SDL)
 
-#include_directories(${XCSOAR_SRC})
-#add_library(Resource ${XCSOAR_SRC}/ResourceLoader.cpp)
+include_directories(${XCSOAR_SRC})
+add_library(Resource ${XCSOAR_SRC}/ResourceLoader.cpp)
 
 set(ASYNC_DIR ${XCSOAR_SRC}/IO/Async)
 set(ASYNC_SRCS 	${ASYNC_DIR}/DiscardFileEventHandler.cpp

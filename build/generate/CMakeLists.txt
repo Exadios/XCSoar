@@ -1,5 +1,3 @@
-set(TOOLS_BIN ${XCSoar_BINARY_DIR}/build/tools)
-set(OUTPUT_INCLUDE ${XCSoar_BINARY_DIR}/include)
 
 add_custom_target(generate ALL
                   COMMAND [ -d ${OUTPUT_INCLUDE} ] || mkdir ${OUTPUT_INCLUDE}
@@ -15,7 +13,7 @@ add_custom_target(generate ALL
 add_dependencies(generate tools)
 
 add_custom_command(OUTPUT ${OUTPUT_INCLUDE}/MathTables.h
-                   COMMAND ${TOOLS_BIN}/generatesinetables > ${OUTPUT_INCLUDE}/MathTables.h
+                   COMMAND ${TOOLS_BIN}/generatesinetables > ${OUTPUT_INCLUDE}/MathTables.h || rm ${OUTPUT_INCLUDE}/MathTables.h
                    DEPENDS ${TOOLS_BIN}/generatesinetables)
 
 add_custom_command(OUTPUT ${OUTPUT_INCLUDE}/InputEvents_altair.cpp
@@ -41,3 +39,4 @@ add_custom_command(OUTPUT ${OUTPUT_INCLUDE}/InputEvents_Text2NE.cpp
 add_custom_command(OUTPUT ${OUTPUT_INCLUDE}/Status_defaults.cpp
                    COMMAND perl ${TOOLS_DIR}/xcs2cpp.pl ${XCSOAR}/Data/Status/default.xcs > ${OUTPUT_INCLUDE}/Status_defaults.cpp
                    DEPENDS ${TOOLS_DIR}/xcs2cpp.pl)
+

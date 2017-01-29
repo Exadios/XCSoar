@@ -6,32 +6,32 @@ HI_RES_AWARE CEUX {1}
 
 #if !defined(ANDROID) || defined(ANDROID_DRAWABLE)
 #define BITMAP(name, path) name BITMAP DISCARDABLE path
-#else
+#else   // !defined(ANDROID) || defined(ANDROID_DRAWABLE)
 /* on Android, these are included as drawable resources (PNG) */
 #define BITMAP(name, path)
-#endif
+#endif  // !defined(ANDROID) || defined(ANDROID_DRAWABLE)
 
 #ifdef WIN32
 #define BITMAP_BITMAP(name, file) BITMAP(name, "bitmaps/" file ".bmp")
-#define BITMAP_ICON(name, file) BITMAP(name, "../output/data/icons/" file ".bmp")
-#define BITMAP_GRAPHIC(name, file) BITMAP(name, "../output/data/graphics/" file ".bmp")
-#else
-#define BITMAP_BITMAP(name, file) BITMAP(name, "../output/data/bitmaps/" file ".png")
+#define BITMAP_ICON(name, file) BITMAP(name, "../out/data/icons/" file ".bmp")
+#define BITMAP_GRAPHIC(name, file) BITMAP(name, "../out/data/graphics/" file ".bmp")
+#else   // defined(WIN32) || defined(__WINE__)
+#define BITMAP_BITMAP(name, file) BITMAP(name, "../out/data/bitmaps/" file ".png")
 #ifdef ENABLE_OPENGL
-#define BITMAP_ICON(name, file) BITMAP(name, "../output/data/icons/" file ".png")
-#else
-#define BITMAP_ICON(name, file) BITMAP(name, "../output/data/icons2/" file ".png")
-#endif
-#define BITMAP_GRAPHIC(name, file) BITMAP(name, "../output/data/graphics2/" file ".png")
-#endif
+#define BITMAP_ICON(name, file) BITMAP(name, "../out/data/icons/" file ".png")
+#else   // ENABLE_OPENGL
+#define BITMAP_ICON(name, file) BITMAP(name, "../out/data/icons2/" file ".png")
+#endif  // ENABLE_OPENGL
+#define BITMAP_GRAPHIC(name, file) BITMAP(name, "../out/data/graphics2/" file ".png")
+#endif  // defined(WIN32) || defined(__WINE__)
 
 #ifdef WIN32
 /* only GDI knows how to deal with hatched brushes, the rest uses
    transparency */
 #define HATCH_BITMAP(name, file) BITMAP_BITMAP(name, file)
-#else
+#else   // WIN32
 #define HATCH_BITMAP(name, file)
-#endif
+#endif  // WIN32
 
 #ifdef WIN32
 #define SOUND(name, file) name WAVE DISCARDABLE "sound/" file ".wav"

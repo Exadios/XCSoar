@@ -1,0 +1,8 @@
+#!/bin/bash
+
+grep '^MAKE_RESOURCE' | while read X
+do
+  Y=$( echo -n $X | sed -e 's/MAKE_RESOURCE(/#define /' | cut -f 1 -d ',')
+  Y=$Y" "$(echo -n $X | cut -f 2 -d ',' | sed -e 's/);//')
+  echo ${Y}
+done

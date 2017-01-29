@@ -6,7 +6,7 @@ enable_testing()
 set(XCSOAR ${CMAKE_HOME_DIRECTORY})
 set(TOOLS_DIR ${XCSOAR}/tools)
 set(XCSOAR_SRC ${XCSOAR}/src)
-set(TOOLS_BIN ${XCSoar_BINARY_DIR}/tools) # YCSoar_BINARY_DIR set by cmake.
+set(TOOLS_BIN ${XCSoar_BINARY_DIR}/build/tools) # XCSoar_BINARY_DIR set by cmake.
 set(OUTPUT_INCLUDE ${XCSoar_BINARY_DIR}/include)
 
 include_directories(${XCSOAR_SRC})
