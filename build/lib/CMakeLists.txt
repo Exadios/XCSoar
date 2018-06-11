@@ -64,7 +64,7 @@ add_custom_command(OUTPUT ${OUTPUT_BASE}/XCSoar.rc
                    DEPENDS ${OUTPUT_INCLUDE}/resource.h
                    VERBATIM)
 add_custom_command(OUTPUT ${OUTPUT_INCLUDE}/resource_data.h
-                   COMMAND perl ${TOOLS_DIR}/GenerateResources.pl ${OUTPUT_BASE}/XCSoar.rc > ${OUTPUT_INCLUDE}/resource_data.h
+                   COMMAND perl ${TOOLS_DIR}/GenerateResources.pl < ${OUTPUT_BASE}/XCSoar.rc > ${OUTPUT_INCLUDE}/resource_data.h
                    DEPENDS ${OUTPUT_BASE}/XCSoar.rc
                    DEPENDS ${TOOLS_DIR}/GenerateResources.pl
                    VERBATIM)
