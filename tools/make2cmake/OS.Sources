@@ -1,0 +1,8 @@
+#!/bin/bash
+
+. CommonVars
+
+pushd ${MAKEBASEDIR} > /dev/null
+make -pn TARGET=UNIX | grep ^OS_SOURCES | sed -e 's:\./src/OS:${OS_DIR}:g' | cut -d '=' -f 2 -
+popd > /dev/null
+

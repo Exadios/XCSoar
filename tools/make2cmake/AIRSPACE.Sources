@@ -1,0 +1,8 @@
+#!/bin/bash
+
+. CommonVars
+
+pushd ${MAKEBASEDIR} > /dev/null
+make -pn TARGET=UNIX | grep ^AIRSPACE_SOURCES | sed -e 's:\$(AIRSPACE_SRC_DIR):${AIRSPACE_DIR}:g' | sed -e 's:\$(ENGINE_SRC_DIR):${ENGINE_DIR}:g' | cut -d '=' -f 2 -
+popd > /dev/null
+

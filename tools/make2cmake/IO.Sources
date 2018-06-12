@@ -1,0 +1,8 @@
+#!/bin/bash
+
+. CommonVars
+
+pushd ${MAKEBASEDIR} > /dev/null
+make -pn TARGET=UNIX | grep ^IO_SOURCES | sed -e 's:\$(IO_SRC_DIR):${IO_DIR}:g' | cut -d '=' -f 2 -
+popd > /dev/null
+

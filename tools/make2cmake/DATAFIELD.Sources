@@ -1,0 +1,8 @@
+#!/bin/bash
+
+. CommonVars
+
+pushd ${MAKEBASEDIR} > /dev/null
+make -pn TARGET=UNIX | grep ^DATA_FIELD_SOURCES | sed -e 's:\$(DATA_FIELD_SRC_DIR):${DATAFIELDS_DIR}:g' | cut -d '=' -f 2 -
+popd > /dev/null
+

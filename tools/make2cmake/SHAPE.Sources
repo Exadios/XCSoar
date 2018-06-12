@@ -1,0 +1,8 @@
+#!/bin/bash
+
+. CommonVars
+
+pushd ${MAKEBASEDIR} > /dev/null
+make -pn TARGET=UNIX | grep ^SHAPELIB_SOURCES | sed -e 's:\$(SHPSRC):${SHAPE_DIR}:g' | cut -d '=' -f 2 -
+popd > /dev/null
+

@@ -1,0 +1,31 @@
+#!/bin/bash
+
+. CommonVars
+
+pushd ${MAKEBASEDIR} > /dev/null
+make -pn TARGET=UNIX | grep ^VOLKSLOGGER_SOURCES | sed -e 's:\$(DRIVER_SRC_DIR):${DRIVER_DIR}:g' | cut -d '=' -f 2 -
+make -pn TARGET=UNIX | grep ^CAI302_SOURCES | sed -e 's:\$(DRIVER_SRC_DIR):${DRIVER_DIR}:g' | cut -d '=' -f 2 -
+make -pn TARGET=UNIX | grep ^IMI_SOURCES | sed -e 's:\$(DRIVER_SRC_DIR):${DRIVER_DIR}:g' | cut -d '=' -f 2 -
+make -pn TARGET=UNIX | grep ^LX_SOURCES | sed -e 's:\$(DRIVER_SRC_DIR):${DRIVER_DIR}:g' | cut -d '=' -f 2 -
+make -pn TARGET=UNIX | grep ^FLARM_SOURCES | sed -e 's:\$(DRIVER_SRC_DIR):${DRIVER_DIR}:g' | cut -d '=' -f 2 -
+make -pn TARGET=UNIX | grep ^FLYTEC_SOURCES | sed -e 's:\$(DRIVER_SRC_DIR):${DRIVER_DIR}:g' | cut -d '=' -f 2 -
+make -pn TARGET=UNIX | grep ^VEGA_SOURCES | sed -e 's:\$(DRIVER_SRC_DIR):${DRIVER_DIR}:g' | cut -d '=' -f 2 -
+make -pn TARGET=UNIX | grep ^BLUEFLY_SOURCES | sed -e 's:\$(DRIVER_SRC_DIR):${DRIVER_DIR}:g' | cut -d '=' -f 2 -
+make -pn TARGET=UNIX | grep ^XCTRACER_SOURCES | sed -e 's:\$(DRIVER_SRC_DIR):${DRIVER_DIR}:g' | cut -d '=' -f 2 -
+make -pn TARGET=UNIX | grep ^THERMALEXPRESS_SOURCES | sed -e 's:\$(DRIVER_SRC_DIR):${DRIVER_DIR}:g' | cut -d '=' -f 2 -
+make -pn TARGET=UNIX | grep ^DRIVER_SOURCES | \
+                       sed -e 's:\$(VOLKSLOGGER_SOURCES)::' | \
+                       sed -e 's:\$(CAI302_SOURCES)::' | \
+                       sed -e 's:\$(IMI_SOURCES)::' | \
+                       sed -e 's:\$(LX_SOURCES)::' | \
+                       sed -e 's:\$(FLARM_SOURCES)::' | \
+                       sed -e 's:\$(FLYTEC_SOURCES)::' | \
+                       sed -e 's:\$(VEGA_SOURCES)::' | \
+                       sed -e 's:\$(BLUEFLY_SOURCES)::' | \
+                       sed -e 's:\$(XCTRACER_SOURCES)::' | \
+                       sed -e 's:\$(THERMALEXPRESS_SOURCES)::' | \
+                       sed -e 's:$(SRC)/Device:${DEVICE_DIR}:g' | \
+                       sed -e 's:\$(DRIVER_SRC_DIR):${DRIVER_DIR}:g' | \
+                       cut -d '=' -f 2 -
+popd > /dev/null
+

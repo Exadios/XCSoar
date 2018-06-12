@@ -1,0 +1,10 @@
+#!/bin/bash
+
+. CommonVars
+
+pushd ${MAKEBASEDIR} > /dev/null
+make -pn TARGET=UNIX | grep ^SCREEN_SOURCES | sed -e 's:\$(SCREEN_CUSTOM_SOURCES)::' | sed -e 's:\$(SCREEN_CUSTOM_SOURCES_IMG)::' | sed -e 's:\$(SCREEN_SRC_DIR):${SCREEN_DIR}:g' | cut -d '=' -f 2 -
+make -pn TARGET=UNIX | grep ^SCREEN_CUSTOM_SOURCES | sed -e 's:\$(SCREEN_SRC_DIR):${SCREEN_DIR}:g' | cut -d '=' -f 2 -
+make -pn TARGET=UNIX | grep ^SCREEN_CUSTOM_SOURCES_IMG | sed -e 's:\$(SCREEN_SRC_DIR):${SCREEN_DIR}:g' | cut -d '=' -f 2 -
+popd > /dev/null
+

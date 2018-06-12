@@ -1,0 +1,2 @@
+
+MAKEBASEDIR=$(pwd | sed -e 's:/tools/make2cmake::')

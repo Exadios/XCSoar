@@ -1,0 +1,8 @@
+#!/bin/bash
+
+. CommonVars
+
+pushd ${MAKEBASEDIR} > /dev/null
+make -pn TARGET=UNIX | grep ^MATH_SOURCES | sed -e 's:\$(MATH_SRC_DIR):${MATH_DIR}:g' | cut -d '=' -f 2 -
+popd > /dev/null
+

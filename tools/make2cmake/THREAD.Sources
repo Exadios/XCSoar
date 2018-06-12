@@ -1,0 +1,8 @@
+#!/bin/bash
+
+. CommonVars
+
+pushd ${MAKEBASEDIR} > /dev/null
+make -pn TARGET=UNIX | grep ^THREAD_SOURCES | sed -e 's:\$(THREAD_SRC_DIR):${THREAD_DIR}:g' | cut -d '=' -f 2 -
+popd > /dev/null
+
