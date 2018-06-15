@@ -1,0 +1,8 @@
+#!/bin/bash
+
+. CommonVars
+
+pushd ${MAKEBASEDIR} > /dev/null
+make -pn TARGET=UNIX | grep ^PROFILE_SOURCES | sed -e 's:\$(UTIL_SRC_DIR):${UTIL_DIR}:g' | cut -d '=' -f 2 -
+popd > /dev/null
+
