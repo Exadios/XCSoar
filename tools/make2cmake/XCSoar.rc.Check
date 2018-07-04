@@ -1,0 +1,8 @@
+#!/bin/bash
+
+. CommonVars
+
+pushd ${MAKEBASEDIR} > /dev/null
+git diff 48d4779616e96bf78f14d43ab271b030680e618d -- Data/XCSoar.rc
+popd > /dev/null
+
