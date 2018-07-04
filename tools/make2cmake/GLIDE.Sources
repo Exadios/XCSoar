@@ -1,0 +1,8 @@
+#!/bin/bash
+
+. CommonVars
+
+pushd ${MAKEBASEDIR} > /dev/null
+make -pn TARGET=UNIX | grep ^GLIDE_SOURCES | sed -e 's:\$(GLIDE_SRC_DIR):${GLIDE_DIR}:g' | cut -d '=' -f 2 -
+popd > /dev/null
+
