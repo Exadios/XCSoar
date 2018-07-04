@@ -2,13 +2,30 @@ set(IO_SRC ${XCSOAR_SRC}/IO)
 include_directories(SYSTEM /usr/include/SDL)
 include_directories(${XCSOAR_SRC}/Engine ${OUTPUT_INCLUDE})
 # TODO these next 2 need to be moved downtree.
+# These are for the 'UNIX' target
+set(GLX false)
+set(OPENGL true)
+set(FREETYPE true)
+set(HAVE_POSIX true)
+set(EGL false)
+set(ENABLE_SDL false)
+set(ENABLE_ALSA true)
+set(VFB false)
+set(USE_FB false)
+set(USE_SDL true)
+set(HAVE_WIN32 false)
+set(HAVE_CE false)
+set(USE_MEMORY_CANVAS ENABLE_SDL and not OPENGL)
+set(GLES2 false)
+set(GLSL ${GLES2})
+set(HAVE_PCM_PLAYER true)
 add_definitions(-DHAVE_POSIX
                 -DENABLE_OPENGL
                 -DGL_GLEXT_PROTOTYPES
                 -DUSE_GLX
                 -DUSE_X11
                 -DUSE_POLL_EVENT
-                -DENABLE_SDL
+                -DENABLE_ALSA
                 -DUSE_FREETYPE
                 -DHAVE_STDINT_H
                 -DHAVE_UNISTD_H
@@ -16,33 +33,43 @@ add_definitions(-DHAVE_POSIX
                 -DRADIANS
                 -DEYE_CANDY)
 include_directories(${XCSOAR_SRC}/unix)
-set(XCSOAR_SRCS	${IO_SRC}/ConfiguredFile.cpp
-                ${IO_SRC}/DataFile.cpp
+set(XCSOAR_SRCS	
+                ${XCSOAR_SRC}/IO/MapFile.cpp
+                ${XCSOAR_SRC}/IO/ConfiguredFile.cpp
+                ${XCSOAR_SRC}/IO/DataFile.cpp
                 ${XCSOAR_SRC}/Airspace/ProtectedAirspaceWarningManager.cpp
                 ${XCSOAR_SRC}/Airspace/ActivePredicate.cpp
                 ${XCSOAR_SRC}/Task/Serialiser.cpp
                 ${XCSOAR_SRC}/Task/Deserialiser.cpp
+                ${XCSOAR_SRC}/Task/SaveFile.cpp
+                ${XCSOAR_SRC}/Task/LoadFile.cpp
                 ${XCSOAR_SRC}/Task/TaskFile.cpp
                 ${XCSOAR_SRC}/Task/TaskFileXCSoar.cpp
                 ${XCSOAR_SRC}/Task/TaskFileIGC.cpp
                 ${XCSOAR_SRC}/Task/TaskFileSeeYou.cpp
+                ${XCSOAR_SRC}/Task/DefaultTask.cpp
                 ${XCSOAR_SRC}/Task/MapTaskManager.cpp
                 ${XCSOAR_SRC}/Task/ProtectedTaskManager.cpp
+                ${XCSOAR_SRC}/Task/FileProtectedTaskManager.cpp
                 ${XCSOAR_SRC}/Task/RoutePlannerGlue.cpp
                 ${XCSOAR_SRC}/Task/ProtectedRoutePlanner.cpp
                 ${XCSOAR_SRC}/Task/TaskStore.cpp
                 ${XCSOAR_SRC}/Task/TypeStrings.cpp
                 ${XCSOAR_SRC}/Task/ValidationErrorStrings.cpp
-
                 ${XCSOAR_SRC}/RadioFrequency.cpp
-
                 ${XCSOAR_SRC}/Engine/Navigation/TraceHistory.cpp
                 ${XCSOAR_SRC}/Engine/Navigation/Aircraft.cpp
                 ${XCSOAR_SRC}/Engine/Trace/Point.cpp
                 ${XCSOAR_SRC}/Engine/Trace/Trace.cpp
                 ${XCSOAR_SRC}/Engine/Trace/Vector.cpp
                 ${XCSOAR_SRC}/Engine/Util/Gradient.cpp
+                ${XCSOAR_SRC}/Engine/ThermalBand/ThermalBand.cpp
+                ${XCSOAR_SRC}/Engine/ThermalBand/ThermalSlice.cpp
+                ${XCSOAR_SRC}/Engine/ThermalBand/ThermalEncounterBand.cpp
+                ${XCSOAR_SRC}/Engine/ThermalBand/ThermalEncounterCollection.cpp
                 ${XCSOAR_SRC}/HorizonWidget.cpp
+                ${XCSOAR_SRC}/Renderer/TextRowRenderer.cpp
+                ${XCSOAR_SRC}/Renderer/TwoTextRowsRenderer.cpp
                 ${XCSOAR_SRC}/Renderer/HorizonRenderer.cpp
                 ${XCSOAR_SRC}/Renderer/GradientRenderer.cpp
                 ${XCSOAR_SRC}/Renderer/GlassRenderer.cpp
@@ -52,15 +79,14 @@ set(XCSOAR_SRCS	${IO_SRC}/ConfiguredFile.cpp
                 ${XCSOAR_SRC}/Renderer/TraceHistoryRenderer.cpp
                 ${XCSOAR_SRC}/Renderer/ThermalBandRenderer.cpp
                 ${XCSOAR_SRC}/Renderer/TaskProgressRenderer.cpp
-                ${XCSOAR_SRC}/Renderer/MarkerRenderer.cpp
-
+                ${XCSOAR_SRC}/Renderer/ClimbPercentRenderer.cpp
                 ${XCSOAR_SRC}/Airspace/AirspaceGlue.cpp
                 ${XCSOAR_SRC}/Airspace/AirspaceParser.cpp
                 ${XCSOAR_SRC}/Airspace/AirspaceVisibility.cpp
                 ${XCSOAR_SRC}/Airspace/AirspaceComputerSettings.cpp
                 ${XCSOAR_SRC}/Airspace/NearestAirspace.cpp
                 ${XCSOAR_SRC}/Renderer/AirspaceRendererSettings.cpp
-
+                ${XCSOAR_SRC}/Renderer/GeoBitmapRenderer.cpp
                 ${XCSOAR_SRC}/Operation/Operation.cpp
                 ${XCSOAR_SRC}/Operation/ProxyOperationEnvironment.cpp
                 ${XCSOAR_SRC}/Operation/NoCancelOperationEnvironment.cpp
@@ -77,7 +103,6 @@ set(XCSOAR_SRCS	${IO_SRC}/ConfiguredFile.cpp
                 ${XCSOAR_SRC}/Computer/ConditionMonitor/ConditionMonitorFinalGlide.cpp
                 ${XCSOAR_SRC}/Computer/ConditionMonitor/ConditionMonitorGlideTerrain.cpp
                 ${XCSOAR_SRC}/Computer/ConditionMonitor/ConditionMonitorLandableReachable.cpp
-                ${XCSOAR_SRC}/Computer/ConditionMonitor/ConditionMonitorStartRules.cpp
                 ${XCSOAR_SRC}/Computer/ConditionMonitor/ConditionMonitorSunset.cpp
                 ${XCSOAR_SRC}/Computer/ConditionMonitor/ConditionMonitorWind.cpp
                 ${XCSOAR_SRC}/Computer/ConditionMonitor/ConditionMonitors.cpp
@@ -146,7 +171,6 @@ set(XCSOAR_SRCS	${IO_SRC}/ConfiguredFile.cpp
                 ${XCSOAR_SRC}/NMEA/VarioInfo.cpp
                 ${XCSOAR_SRC}/NMEA/ClimbInfo.cpp
                 ${XCSOAR_SRC}/NMEA/CirclingInfo.cpp
-                ${XCSOAR_SRC}/NMEA/ThermalBand.cpp
                 ${XCSOAR_SRC}/NMEA/ThermalLocator.cpp
                 ${XCSOAR_SRC}/NMEA/ClimbHistory.cpp
                 ${XCSOAR_SRC}/NMEA/SwitchState.cpp
@@ -168,6 +192,7 @@ set(XCSOAR_SRCS	${IO_SRC}/ConfiguredFile.cpp
                 ${XCSOAR_SRC}/Waypoint/WaypointListBuilder.cpp
                 ${XCSOAR_SRC}/Waypoint/WaypointFilter.cpp
                 ${XCSOAR_SRC}/Waypoint/WaypointGlue.cpp
+                ${XCSOAR_SRC}/Waypoint/SaveGlue.cpp
                 ${XCSOAR_SRC}/Waypoint/LastUsed.cpp
                 ${XCSOAR_SRC}/Waypoint/HomeGlue.cpp
                 ${XCSOAR_SRC}/Waypoint/WaypointFileType.cpp
@@ -179,27 +204,25 @@ set(XCSOAR_SRCS	${IO_SRC}/ConfiguredFile.cpp
                 ${XCSOAR_SRC}/Waypoint/WaypointReaderSeeYou.cpp
                 ${XCSOAR_SRC}/Waypoint/WaypointReaderZander.cpp
                 ${XCSOAR_SRC}/Waypoint/WaypointReaderCompeGPS.cpp
-                ${XCSOAR_SRC}/Waypoint/WaypointWriter.cpp
+                ${XCSOAR_SRC}/Waypoint/CupWriter.cpp
+                ${XCSOAR_SRC}/Waypoint/Factory.cpp
                 ${XCSOAR_SRC}/Computer/Wind/CirclingWind.cpp
                 ${XCSOAR_SRC}/Computer/Wind/MeasurementList.cpp
                 ${XCSOAR_SRC}/Computer/Wind/Store.cpp
                 ${XCSOAR_SRC}/Computer/Wind/WindEKF.cpp
                 ${XCSOAR_SRC}/Computer/Wind/WindEKFGlue.cpp
                 ${XCSOAR_SRC}/Computer/Wind/Settings.cpp
-
                 ${XCSOAR_SRC}/CrossSection/AirspaceXSRenderer.cpp
                 ${XCSOAR_SRC}/CrossSection/TerrainXSRenderer.cpp
                 ${XCSOAR_SRC}/CrossSection/CrossSectionRenderer.cpp
                 ${XCSOAR_SRC}/CrossSection/CrossSectionWindow.cpp
                 ${XCSOAR_SRC}/CrossSection/CrossSectionWidget.cpp
-
                 ${XCSOAR_SRC}/Gauge/ThermalAssistantRenderer.cpp
                 ${XCSOAR_SRC}/Gauge/ThermalAssistantWindow.cpp
                 ${XCSOAR_SRC}/Gauge/BigThermalAssistantWindow.cpp
                 ${XCSOAR_SRC}/Gauge/BigThermalAssistantWidget.cpp
                 ${XCSOAR_SRC}/Gauge/FlarmTrafficWindow.cpp
                 ${XCSOAR_SRC}/Gauge/BigTrafficWidget.cpp
-                ${XCSOAR_SRC}/Look/FlarmTrafficLook.cpp
                 ${XCSOAR_SRC}/Gauge/GaugeFLARM.cpp
                 ${XCSOAR_SRC}/Gauge/GaugeThermalAssistant.cpp
                 ${XCSOAR_SRC}/Gauge/VarioSettings.cpp
@@ -208,12 +231,12 @@ set(XCSOAR_SRCS	${IO_SRC}/ConfiguredFile.cpp
                 ${XCSOAR_SRC}/Gauge/GlueGaugeVario.cpp
                 ${XCSOAR_SRC}/Gauge/TaskView.cpp
                 ${XCSOAR_SRC}/Gauge/LogoView.cpp
-
                 ${XCSOAR_SRC}/Waypoint/WaypointDetailsReader.cpp
                 ${XCSOAR_SRC}/Menu/MenuData.cpp
                 ${XCSOAR_SRC}/Menu/MenuBar.cpp
                 ${XCSOAR_SRC}/Menu/ButtonLabel.cpp
                 ${XCSOAR_SRC}/Menu/ExpandMacros.cpp
+                ${XCSOAR_SRC}/Menu/ShowMenuButton.cpp
                 ${XCSOAR_SRC}/InfoBoxes/Content/Factory.cpp
                 ${XCSOAR_SRC}/InfoBoxes/Content/Alternate.cpp
                 ${XCSOAR_SRC}/InfoBoxes/Content/Base.cpp
@@ -254,7 +277,6 @@ set(XCSOAR_SRCS	${IO_SRC}/ConfiguredFile.cpp
                 ${XCSOAR_SRC}/Input/InputEventsActions.cpp
                 ${XCSOAR_SRC}/Input/InputEventsDevice.cpp
                 ${XCSOAR_SRC}/Input/InputEventsVega.cpp
-                ${XCSOAR_SRC}/Input/InputEventsInfoBox.cpp
                 ${XCSOAR_SRC}/Input/InputEventsMap.cpp
                 ${XCSOAR_SRC}/Input/InputEventsPage.cpp
                 ${XCSOAR_SRC}/Input/InputEventsAirspace.cpp
@@ -262,6 +284,7 @@ set(XCSOAR_SRCS	${IO_SRC}/ConfiguredFile.cpp
                 ${XCSOAR_SRC}/Input/InputEventsSettings.cpp
                 ${XCSOAR_SRC}/Input/InputEventsThermalAssistant.cpp
                 ${XCSOAR_SRC}/Input/InputEventsTraffic.cpp
+                ${XCSOAR_SRC}/Input/InputEventsLua.cpp
                 ${XCSOAR_SRC}/Input/InputQueue.cpp
                 ${XCSOAR_SRC}/Input/InputLookup.cpp
                 ${XCSOAR_SRC}/Input/InputKeys.cpp
@@ -274,7 +297,6 @@ set(XCSOAR_SRCS	${IO_SRC}/ConfiguredFile.cpp
                 ${XCSOAR_SRC}/PopupMessage.cpp
                 ${XCSOAR_SRC}/Message.cpp
                 ${XCSOAR_SRC}/LogFile.cpp
-
                 ${XCSOAR_SRC}/Geo/Geoid.cpp
                 ${XCSOAR_SRC}/MapWindow/MapCanvas.cpp
                 ${XCSOAR_SRC}/MapWindow/StencilMapCanvas.cpp
@@ -291,6 +313,8 @@ set(XCSOAR_SRCS	${IO_SRC}/ConfiguredFile.cpp
                 ${XCSOAR_SRC}/Renderer/AirspaceRenderer.cpp
                 ${XCSOAR_SRC}/Renderer/AirspaceRendererGL.cpp
                 ${XCSOAR_SRC}/Renderer/AirspaceRendererOther.cpp
+                ${XCSOAR_SRC}/Renderer/AirspaceLabelList.cpp
+                ${XCSOAR_SRC}/Renderer/AirspaceLabelRenderer.cpp
                 ${XCSOAR_SRC}/Renderer/AirspaceListRenderer.cpp
                 ${XCSOAR_SRC}/Renderer/AirspacePreviewRenderer.cpp
                 ${XCSOAR_SRC}/Renderer/BestCruiseArrowRenderer.cpp
@@ -309,11 +333,16 @@ set(XCSOAR_SRCS	${IO_SRC}/ConfiguredFile.cpp
                 ${XCSOAR_SRC}/Renderer/WaypointRendererSettings.cpp
                 ${XCSOAR_SRC}/Renderer/WaypointLabelList.cpp
                 ${XCSOAR_SRC}/Renderer/WindArrowRenderer.cpp
+                ${XCSOAR_SRC}/Renderer/NextArrowRenderer.cpp
                 ${XCSOAR_SRC}/Renderer/WaveRenderer.cpp
                 ${XCSOAR_SRC}/Projection/ChartProjection.cpp
                 ${XCSOAR_SRC}/MapWindow/Items/MapItem.cpp
+                ${XCSOAR_SRC}/MapWindow/Items/OverlayMapItem.cpp
                 ${XCSOAR_SRC}/MapWindow/Items/List.cpp
                 ${XCSOAR_SRC}/MapWindow/Items/Builder.cpp
+                ${XCSOAR_SRC}/MapWindow/Items/AirspaceBuilder.cpp
+                ${XCSOAR_SRC}/MapWindow/Items/TrafficBuilder.cpp
+                ${XCSOAR_SRC}/MapWindow/Items/WeatherBuilder.cpp
                 ${XCSOAR_SRC}/MapWindow/MapWindow.cpp
                 ${XCSOAR_SRC}/MapWindow/MapWindowEvents.cpp
                 ${XCSOAR_SRC}/MapWindow/MapWindowGlideRange.cpp
@@ -337,11 +366,14 @@ set(XCSOAR_SRCS	${IO_SRC}/ConfiguredFile.cpp
                 ${XCSOAR_SRC}/UIUtil/GestureManager.cpp
                 ${XCSOAR_SRC}/UIUtil/TrackingGestureManager.cpp
                 ${XCSOAR_SRC}/DrawThread.cpp
-
+                ${XCSOAR_SRC}/Weather/Rasp/RaspStore.cpp
+                ${XCSOAR_SRC}/Weather/Rasp/RaspCache.cpp
+                ${XCSOAR_SRC}/Weather/Rasp/RaspRenderer.cpp
+                ${XCSOAR_SRC}/Weather/Rasp/RaspStyle.cpp
+                ${XCSOAR_SRC}/Weather/Rasp/Providers.cpp
                 ${XCSOAR_SRC}/Computer/BasicComputer.cpp
                 ${XCSOAR_SRC}/Computer/GroundSpeedComputer.cpp
                 ${XCSOAR_SRC}/Computer/AutoQNH.cpp
-
                 ${XCSOAR_SRC}/Blackboard/BlackboardListener.cpp
                 ${XCSOAR_SRC}/Blackboard/ProxyBlackboardListener.cpp
                 ${XCSOAR_SRC}/Blackboard/RateLimitedBlackboardListener.cpp
@@ -349,7 +381,6 @@ set(XCSOAR_SRCS	${IO_SRC}/ConfiguredFile.cpp
                 ${XCSOAR_SRC}/Blackboard/InterfaceBlackboard.cpp
                 ${XCSOAR_SRC}/Blackboard/ScopeGPSListener.cpp
                 ${XCSOAR_SRC}/Blackboard/ScopeCalculatedListener.cpp
-
                 ${XCSOAR_SRC}/Blackboard/DeviceBlackboard.cpp
                 ${XCSOAR_SRC}/MapWindow/MapWindowBlackboard.cpp
                 ${XCSOAR_SRC}/Dialogs/DialogSettings.cpp
@@ -366,33 +397,35 @@ set(XCSOAR_SRCS	${IO_SRC}/ConfiguredFile.cpp
                 ${XCSOAR_SRC}/MergeThread.cpp
                 ${XCSOAR_SRC}/CalculationThread.cpp
                 ${XCSOAR_SRC}/DisplayMode.cpp
-
                 ${XCSOAR_SRC}/Topography/TopographyFile.cpp
                 ${XCSOAR_SRC}/Topography/TopographyStore.cpp
                 ${XCSOAR_SRC}/Topography/TopographyFileRenderer.cpp
                 ${XCSOAR_SRC}/Topography/TopographyRenderer.cpp
+                ${XCSOAR_SRC}/Topography/Thread.cpp
                 ${XCSOAR_SRC}/Topography/TopographyGlue.cpp
                 ${XCSOAR_SRC}/Topography/XShape.cpp
                 ${XCSOAR_SRC}/Topography/CachedTopographyRenderer.cpp
                 ${XCSOAR_SRC}/Markers/Markers.cpp
-                ${XCSOAR_SRC}/Markers/ProtectedMarkers.cpp
-
                 ${XCSOAR_SRC}/FlightStatistics.cpp
                 ${XCSOAR_SRC}/FlightInfo.cpp
                 ${XCSOAR_SRC}/Renderer/FlightStatisticsRenderer.cpp
                 ${XCSOAR_SRC}/Renderer/BarographRenderer.cpp
                 ${XCSOAR_SRC}/Renderer/ClimbChartRenderer.cpp
                 ${XCSOAR_SRC}/Renderer/GlidePolarRenderer.cpp
+                ${XCSOAR_SRC}/Renderer/GlidePolarInfoRenderer.cpp
                 ${XCSOAR_SRC}/Renderer/WindChartRenderer.cpp
                 ${XCSOAR_SRC}/Renderer/CuRenderer.cpp
-
+                ${XCSOAR_SRC}/Renderer/MacCreadyRenderer.cpp
+                ${XCSOAR_SRC}/Renderer/VarioHistogramRenderer.cpp
+                ${XCSOAR_SRC}/Renderer/TaskLegRenderer.cpp
+                ${XCSOAR_SRC}/Renderer/TaskSpeedRenderer.cpp
+                ${XCSOAR_SRC}/Renderer/MapScaleRenderer.cpp
                 ${XCSOAR_SRC}/Simulator.cpp
                 ${XCSOAR_SRC}/Asset.cpp
                 ${XCSOAR_SRC}/Hardware/CPU.cpp
-                ${XCSOAR_SRC}/Hardware/Display.cpp
                 ${XCSOAR_SRC}/Hardware/RotateDisplay.cpp
                 ${XCSOAR_SRC}/Hardware/DisplayDPI.cpp
-                ${XCSOAR_SRC}/Hardware/BlankDisplay.cpp
+                ${XCSOAR_SRC}/Hardware/DisplaySize.cpp
                 ${XCSOAR_SRC}/Hardware/DisplayGlue.cpp
                 ${XCSOAR_SRC}/Hardware/Vibrator.cpp
                 ${XCSOAR_SRC}/Language/MOFile.cpp
@@ -422,6 +455,7 @@ set(XCSOAR_SRCS	${IO_SRC}/ConfiguredFile.cpp
                 ${XCSOAR_SRC}/Units/Descriptor.cpp
                 ${XCSOAR_SRC}/Units/System.cpp
                 ${XCSOAR_SRC}/Units/Settings.cpp
+                ${XCSOAR_SRC}/Units/Temperature.cpp
                 ${XCSOAR_SRC}/Formatter/AngleFormatter.cpp
                 ${XCSOAR_SRC}/FLARM/FlarmDetails.cpp
                 ${XCSOAR_SRC}/FLARM/NameDatabase.cpp
@@ -432,13 +466,11 @@ set(XCSOAR_SRCS	${IO_SRC}/ConfiguredFile.cpp
                 ${XCSOAR_SRC}/OS/LogError.cpp
                 ${XCSOAR_SRC}/Version.cpp
                 ${XCSOAR_SRC}/Audio/Sound.cpp
-                ${XCSOAR_SRC}/Audio/VegaVoice.cpp
-                ${XCSOAR_SRC}/Audio/VegaVoiceSettings.cpp
                 ${XCSOAR_SRC}/Compatibility/fmode.c
                 ${XCSOAR_SRC}/Profile/Profile.cpp
-                ${XCSOAR_SRC}/Profile/Earth.cpp
                 ${XCSOAR_SRC}/Profile/Screen.cpp
                 ${XCSOAR_SRC}/Profile/TrackingProfile.cpp
+                ${XCSOAR_SRC}/Profile/WeatherProfile.cpp
                 ${XCSOAR_SRC}/Profile/SystemProfile.cpp
                 ${XCSOAR_SRC}/Profile/ComputerProfile.cpp
                 ${XCSOAR_SRC}/Profile/RouteProfile.cpp
@@ -448,9 +480,7 @@ set(XCSOAR_SRCS	${IO_SRC}/ConfiguredFile.cpp
                 ${XCSOAR_SRC}/Profile/MapProfile.cpp
                 ${XCSOAR_SRC}/Profile/PageProfile.cpp
                 ${XCSOAR_SRC}/Profile/UIProfile.cpp
-                ${XCSOAR_SRC}/Profile/ProfileGlue.cpp
-                ${XCSOAR_SRC}/Profile/ProfileKeys.cpp
-                ${XCSOAR_SRC}/Profile/FontConfig.cpp
+                ${XCSOAR_SRC}/Profile/Settings.cpp
                 ${XCSOAR_SRC}/Profile/UnitsConfig.cpp
                 ${XCSOAR_SRC}/Profile/DeviceConfig.cpp
                 ${XCSOAR_SRC}/Profile/InfoBoxConfig.cpp
@@ -462,65 +492,26 @@ set(XCSOAR_SRCS	${IO_SRC}/ConfiguredFile.cpp
                 ${XCSOAR_SRC}/XML/Writer.cpp
                 ${XCSOAR_SRC}/XML/DataNode.cpp
                 ${XCSOAR_SRC}/XML/DataNodeXML.cpp
-
                 ${XCSOAR_SRC}/Repository/FileRepository.cpp
                 ${XCSOAR_SRC}/Repository/Parser.cpp
-
                 ${XCSOAR_SRC}/Job/Thread.cpp
                 ${XCSOAR_SRC}/Job/Async.cpp
-
                 ${XCSOAR_SRC}/RateLimiter.cpp
-
-                ${XCSOAR_SRC}/Tracking/TrackingSettings.cpp
-
                 ${XCSOAR_SRC}/Math/Screen.cpp
                 ${XCSOAR_SRC}/Math/SunEphemeris.cpp
-
-                ${XCSOAR_SRC}/Screen/Blank.cpp
                 ${XCSOAR_SRC}/Screen/Layout.cpp
-                ${XCSOAR_SRC}/Screen/UnitSymbol.cpp
                 ${XCSOAR_SRC}/Screen/Ramp.cpp
                 ${XCSOAR_SRC}/Screen/TerminalWindow.cpp
-
+                ${XCSOAR_SRC}/Look/FontDescription.cpp
                 ${XCSOAR_SRC}/Look/GlobalFonts.cpp
                 ${XCSOAR_SRC}/Look/AutoFont.cpp
                 ${XCSOAR_SRC}/Look/DefaultFonts.cpp
-                ${XCSOAR_SRC}/Look/Look.cpp
-                ${XCSOAR_SRC}/Look/DialogLook.cpp
-                ${XCSOAR_SRC}/Look/ButtonLook.cpp
-                ${XCSOAR_SRC}/Look/TerminalLook.cpp
-                ${XCSOAR_SRC}/Look/VarioLook.cpp
-                ${XCSOAR_SRC}/Look/ChartLook.cpp
-                ${XCSOAR_SRC}/Look/MapLook.cpp
-                ${XCSOAR_SRC}/Look/WindArrowLook.cpp
-                ${XCSOAR_SRC}/Look/ThermalBandLook.cpp
-                ${XCSOAR_SRC}/Look/TraceHistoryLook.cpp
-                ${XCSOAR_SRC}/Look/AirspaceLook.cpp
-                ${XCSOAR_SRC}/Look/TrailLook.cpp
-                ${XCSOAR_SRC}/Look/CrossSectionLook.cpp
-                ${XCSOAR_SRC}/Look/GestureLook.cpp
-                ${XCSOAR_SRC}/Look/HorizonLook.cpp
-                ${XCSOAR_SRC}/Look/TaskLook.cpp
-                ${XCSOAR_SRC}/Look/TrafficLook.cpp
-                ${XCSOAR_SRC}/Look/InfoBoxLook.cpp
-                ${XCSOAR_SRC}/Look/WaypointLook.cpp
-                ${XCSOAR_SRC}/Look/AircraftLook.cpp
-                ${XCSOAR_SRC}/Look/MarkerLook.cpp
-                ${XCSOAR_SRC}/Look/NOAALook.cpp
-                ${XCSOAR_SRC}/Look/FinalGlideBarLook.cpp
-                ${XCSOAR_SRC}/Look/VarioBarLook.cpp
-                ${XCSOAR_SRC}/Look/IconLook.cpp
-                ${XCSOAR_SRC}/Look/UnitsLook.cpp
-                ${XCSOAR_SRC}/Look/ThermalAssistantLook.cpp
-                ${XCSOAR_SRC}/Look/WaveLook.cpp
-
                 ${XCSOAR_SRC}/Polar/PolarGlue.cpp
                 ${XCSOAR_SRC}/Polar/PolarFileGlue.cpp
                 ${XCSOAR_SRC}/Polar/Shape.cpp
                 ${XCSOAR_SRC}/Polar/Polar.cpp
                 ${XCSOAR_SRC}/Polar/Parser.cpp
                 ${XCSOAR_SRC}/Polar/PolarStore.cpp
-
                 ${XCSOAR_SRC}/Protection.cpp
                 ${XCSOAR_SRC}/BatteryTimer.cpp
                 ${XCSOAR_SRC}/ProcessTimer.cpp
@@ -529,10 +520,8 @@ set(XCSOAR_SRCS	${IO_SRC}/ConfiguredFile.cpp
                 ${XCSOAR_SRC}/MainWindow.cpp
                 ${XCSOAR_SRC}/Startup.cpp
                 ${XCSOAR_SRC}/Components.cpp
-
-                ${XCSOAR_SRC}/Device/Driver.cpp
+                ${XCSOAR_SRC}/DataGlobals.cpp
                 ${XCSOAR_SRC}/Device/Declaration.cpp
-                ${XCSOAR_SRC}/Device/Register.cpp
                 ${XCSOAR_SRC}/Device/MultipleDevices.cpp
                 ${XCSOAR_SRC}/Device/device.cpp
                 ${XCSOAR_SRC}/Device/Port/ConfiguredPort.cpp
@@ -544,16 +533,172 @@ set(XCSOAR_SRCS	${IO_SRC}/ConfiguredFile.cpp
                 ${XCSOAR_SRC}/Device/Util/NMEAWriter.cpp
                 ${XCSOAR_SRC}/Device/Util/NMEAReader.cpp
                 ${XCSOAR_SRC}/Device/Config.cpp
-
+                ${XCSOAR_SRC}/Dialogs/Inflate.cpp
+                ${XCSOAR_SRC}/Dialogs/Message.cpp
+                ${XCSOAR_SRC}/Dialogs/Error.cpp
+                ${XCSOAR_SRC}/Dialogs/ListPicker.cpp
+                ${XCSOAR_SRC}/Dialogs/ProgressDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/JobDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/WidgetDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/FileManager.cpp
+                ${XCSOAR_SRC}/Dialogs/Device/DeviceEditWidget.cpp
+                ${XCSOAR_SRC}/Dialogs/Device/DeviceListDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/Device/PortMonitor.cpp
+                ${XCSOAR_SRC}/Dialogs/Device/ManageCAI302Dialog.cpp
+                ${XCSOAR_SRC}/Dialogs/Device/CAI302/UnitsEditor.cpp
+                ${XCSOAR_SRC}/Dialogs/Device/CAI302/WaypointUploader.cpp
+                ${XCSOAR_SRC}/Dialogs/Device/ManageFlarmDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/Device/BlueFly/BlueFlyConfigurationDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/Device/LX/ManageV7Dialog.cpp
+                ${XCSOAR_SRC}/Dialogs/Device/LX/V7ConfigWidget.cpp
+                ${XCSOAR_SRC}/Dialogs/Device/LX/ManageNanoDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/Device/LX/NanoConfigWidget.cpp
+                ${XCSOAR_SRC}/Dialogs/Device/LX/ManageLX16xxDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/Device/Vega/VegaParametersWidget.cpp
+                ${XCSOAR_SRC}/Dialogs/Device/Vega/VegaConfigurationDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/Device/Vega/VegaDemoDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/Device/Vega/SwitchesDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/Device/FLARM/ConfigWidget.cpp
+                ${XCSOAR_SRC}/Dialogs/MapItemListDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/MapItemListSettingsDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/MapItemListSettingsPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/ColorListDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/Airspace/dlgAirspace.cpp
+                ${XCSOAR_SRC}/Dialogs/Airspace/dlgAirspacePatterns.cpp
+                ${XCSOAR_SRC}/Dialogs/Airspace/dlgAirspaceDetails.cpp
+                ${XCSOAR_SRC}/Dialogs/Airspace/AirspaceList.cpp
+                ${XCSOAR_SRC}/Dialogs/Airspace/AirspaceCRendererSettingsDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/Airspace/AirspaceCRendererSettingsPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Airspace/dlgAirspaceWarnings.cpp
+                ${XCSOAR_SRC}/Dialogs/Settings/WindSettingsPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Settings/WindSettingsDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/Settings/dlgBasicSettings.cpp
+                ${XCSOAR_SRC}/Dialogs/Settings/dlgConfiguration.cpp
+                ${XCSOAR_SRC}/Dialogs/Settings/dlgConfigInfoboxes.cpp
+                ${XCSOAR_SRC}/Dialogs/Traffic/TrafficList.cpp
+                ${XCSOAR_SRC}/Dialogs/Traffic/FlarmTrafficDetails.cpp
+                ${XCSOAR_SRC}/Dialogs/Traffic/TeamCodeDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/dlgAnalysis.cpp
+                ${XCSOAR_SRC}/Dialogs/dlgChecklist.cpp
+                ${XCSOAR_SRC}/Dialogs/ProfileListDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/Plane/PlaneListDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/Plane/PlaneDetailsDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/Plane/PlanePolarDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/Plane/PolarShapeEditWidget.cpp
+                ${XCSOAR_SRC}/Dialogs/DataField.cpp
+                ${XCSOAR_SRC}/Dialogs/ComboPicker.cpp
+                ${XCSOAR_SRC}/Dialogs/FilePicker.cpp
+                ${XCSOAR_SRC}/Dialogs/HelpDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/dlgInfoBoxAccess.cpp
+                ${XCSOAR_SRC}/Dialogs/ReplayDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/dlgSimulatorPrompt.cpp
+                ${XCSOAR_SRC}/Dialogs/SimulatorPromptWindow.cpp
+                ${XCSOAR_SRC}/Dialogs/StartupDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/ProfilePasswordDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/dlgStatus.cpp
+                ${XCSOAR_SRC}/Dialogs/StatusPanels/StatusPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/StatusPanels/FlightStatusPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/StatusPanels/SystemStatusPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/StatusPanels/TaskStatusPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/StatusPanels/RulesStatusPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/StatusPanels/TimesStatusPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Waypoint/WaypointInfoWidget.cpp
+                ${XCSOAR_SRC}/Dialogs/Waypoint/WaypointCommandsWidget.cpp
+                ${XCSOAR_SRC}/Dialogs/Waypoint/dlgWaypointDetails.cpp
+                ${XCSOAR_SRC}/Dialogs/Waypoint/Manager.cpp
+                ${XCSOAR_SRC}/Dialogs/Waypoint/dlgWaypointEdit.cpp
+                ${XCSOAR_SRC}/Dialogs/Waypoint/WaypointList.cpp
+                ${XCSOAR_SRC}/Dialogs/Waypoint/NearestWaypoint.cpp
+                ${XCSOAR_SRC}/Dialogs/Settings/Panels/AirspaceConfigPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Settings/Panels/GaugesConfigPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Settings/Panels/VarioConfigPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Settings/Panels/GlideComputerConfigPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Settings/Panels/WindConfigPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Settings/Panels/InfoBoxesConfigPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Settings/Panels/InterfaceConfigPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Settings/Panels/LayoutConfigPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Settings/Panels/LoggerConfigPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Settings/Panels/MapDisplayConfigPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Settings/Panels/PagesConfigPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Settings/Panels/RouteConfigPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Settings/Panels/SafetyFactorsConfigPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Settings/Panels/SiteConfigPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Settings/Panels/SymbolsConfigPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Settings/Panels/TaskRulesConfigPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Settings/Panels/TaskDefaultsConfigPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Settings/Panels/ScoringConfigPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Settings/Panels/TerrainDisplayConfigPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Settings/Panels/UnitsConfigPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Settings/Panels/TimeConfigPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Settings/Panels/WaypointDisplayConfigPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Settings/Panels/TrackingConfigPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Settings/Panels/CloudConfigPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Settings/Panels/WeatherConfigPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Task/Widgets/ObservationZoneEditWidget.cpp
+                ${XCSOAR_SRC}/Dialogs/Task/Widgets/CylinderZoneEditWidget.cpp
+                ${XCSOAR_SRC}/Dialogs/Task/Widgets/LineSectorZoneEditWidget.cpp
+                ${XCSOAR_SRC}/Dialogs/Task/Widgets/SectorZoneEditWidget.cpp
+                ${XCSOAR_SRC}/Dialogs/Task/Widgets/KeyholeZoneEditWidget.cpp
+                ${XCSOAR_SRC}/Dialogs/Task/Manager/TaskMapButtonRenderer.cpp
+                ${XCSOAR_SRC}/Dialogs/Task/Manager/TaskManagerDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/Task/Manager/TaskClosePanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Task/Manager/TaskEditPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Task/Manager/TaskPropertiesPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Task/Manager/TaskMiscPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Task/Manager/TaskActionsPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Task/Manager/TaskListPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Task/OptionalStartsDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/Task/TaskPointDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/Task/MutateTaskPointDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/Task/dlgTaskHelpers.cpp
+                ${XCSOAR_SRC}/Dialogs/Task/TargetDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/Task/AlternatesListDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/Tracking/CloudEnableDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/NumberEntry.cpp
+                ${XCSOAR_SRC}/Dialogs/TextEntry.cpp
+                ${XCSOAR_SRC}/Dialogs/KnobTextEntry.cpp
+                ${XCSOAR_SRC}/Dialogs/TouchTextEntry.cpp
+                ${XCSOAR_SRC}/Dialogs/TimeEntry.cpp
+                ${XCSOAR_SRC}/Dialogs/GeoPointEntry.cpp
+                ${XCSOAR_SRC}/Dialogs/Weather/WeatherDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/Weather/RASPDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/dlgCredits.cpp
+                ${XCSOAR_SRC}/Dialogs/dlgQuickMenu.cpp
+                 ${XCSOAR_SRC}/Dialogs/Settings/Panels/AudioVarioConfigPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Settings/Panels/AudioConfigPanel.cpp
+                ${XCSOAR_SRC}/Dialogs/Weather/PCMetDialog.cpp
+                ${XCSOAR_SRC}/Dialogs/Weather/NOAAList.cpp
+                ${XCSOAR_SRC}/Dialogs/Weather/NOAADetails.cpp
+                ${XCSOAR_SRC}/Monitor/WindMonitor.cpp
+                ${XCSOAR_SRC}/Monitor/AirspaceWarningMonitor.cpp
+                ${XCSOAR_SRC}/Monitor/TaskConstraintsMonitor.cpp
                 ${XCSOAR_SRC}/Monitor/TaskAdvanceMonitor.cpp
                 ${XCSOAR_SRC}/Monitor/MatTaskMonitor.cpp
                 ${XCSOAR_SRC}/Monitor/AllMonitors.cpp
-
                 ${XCSOAR_SRC}/Hardware/Battery.cpp
-
+                ${XCSOAR_SRC}/Dialogs/Weather/MapOverlayWidget.cpp
+                ${XCSOAR_SRC}/MapWindow/OverlayBitmap.cpp
                 ${XCSOAR_SRC}/CommandLine.cpp
-                ${XCSOAR_SRC}/XCSoar.cpp)
-
+                ${XCSOAR_SRC}/XCSoar.cpp
+                ${XCSOAR_SRC}/Dialogs/DownloadFilePicker.cpp
+                ${XCSOAR_SRC}/Repository/Glue.cpp
+                ${XCSOAR_SRC}/Renderer/NOAAListRenderer.cpp
+                ${XCSOAR_SRC}/Weather/PCMet/Images.cpp
+                ${XCSOAR_SRC}/Weather/PCMet/Overlays.cpp
+                ${XCSOAR_SRC}/Weather/NOAAGlue.cpp
+                ${XCSOAR_SRC}/Weather/METARParser.cpp
+                ${XCSOAR_SRC}/Weather/NOAAFormatter.cpp
+                ${XCSOAR_SRC}/Weather/NOAADownloader.cpp
+                ${XCSOAR_SRC}/Weather/NOAAStore.cpp
+                ${XCSOAR_SRC}/Weather/NOAAUpdater.cpp
+                ${XCSOAR_SRC}/Tracking/LiveTrack24/Client.cpp
+                ${XCSOAR_SRC}/Tracking/SkyLines/Client.cpp
+                ${XCSOAR_SRC}/Tracking/SkyLines/Assemble.cpp
+                ${XCSOAR_SRC}/Tracking/SkyLines/Key.cpp
+                ${XCSOAR_SRC}/Tracking/SkyLines/Glue.cpp
+                ${XCSOAR_SRC}/Tracking/TrackingGlue.cpp
+                ${XCSOAR_SRC}/Audio/VarioGlue.cpp
+                )
 
 add_executable(xcsoar ${XCSOAR_SRCS})
 add_dependencies(xcsoar tools generate lib)
@@ -565,9 +710,11 @@ target_link_libraries(xcsoar
                             Datafield
                             Screen
                             Event
-#                            Resource
+                            Resource
+                            Resources
                             Async
                             Airspace
+                            Audio
                             Contest
                             Driver
                             Task
@@ -575,21 +722,27 @@ target_link_libraries(xcsoar
                             Glide
                             Io
                             Math
+                            Net
                             Route
                             Shape
                             Thread
                             Util
                             Waypoint
+                            Lua
+                            Look
+                            Data
                             Os
                             pthread
                             rt
                             m
                             GL
                             freetype
-                            png12
+                            png
                             z
                             jpeg
                             X11
                             z
                             curl
-                            z)
+                            asound
+                            z
+                            lua5.2)

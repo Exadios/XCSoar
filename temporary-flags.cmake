@@ -7,4 +7,4 @@
 
 set(temporary_cxx_flags "-Wno-error=unused-parameter -Wno-error=deprecated-declarations -Wno-error=shift-negative-value")
 
-set(temporary_c_flags "")
+set(temporary_c_flags "-Wno-error=shift-negative-value")

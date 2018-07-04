@@ -31,7 +31,7 @@ while (<RC>) {
     if (/^\s*(\d+)\s+BITMAP\s+DISCARDABLE\s+"(.*?)"\s*$/ or
           /^\s*([.\w]+)\s+(?:TEXT|XMLDIALOG|MO|RASTERDATA|WAVE)\s+DISCARDABLE\s+"(.*?)"\s*$/) {
         my ($id, $path) = ($1, $2);
-        $path = "Data/${path}";
+#        $path = "Data/${path}";
         my $name = "resource_${id}";
         $name =~ s,\.,_,g;
 

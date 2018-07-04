@@ -24,6 +24,8 @@
 
 #include "Airspace.hpp"
 #include "Geo/Flat/BoostFlatBoundingBox.hpp"
+#include <vector>
+#include <iostream>
 
 #include <boost/geometry/index/rtree.hpp>
 #include <boost/range/iterator_range_core.hpp>

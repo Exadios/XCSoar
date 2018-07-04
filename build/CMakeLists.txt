@@ -1,6 +1,4 @@
 #set(TOOLS_BIN ${XCSoar_BINARY_DIR}/build/tools)
-set(OUTPUT_BASE ${XCSoar_BINARY_DIR})
-set(OUTPUT_INCLUDE ${OUTPUT_BASE}/include)
 
 add_custom_target(base_debug
                   COMMAND echo CMAKE_CURRENT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}
@@ -9,6 +7,8 @@ add_custom_target(base_debug
                  )
 
 add_subdirectory(./tools)
+add_subdirectory(./resource)
 add_subdirectory(./generate)
+add_definitions(${BOOST_CPPFLAGS})
 add_subdirectory(./lib)
 add_subdirectory(./src)

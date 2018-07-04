@@ -33,6 +33,8 @@ Copyright_License {
 #include "Math/Boost/Point.hpp"
 #include "OS/Path.hpp"
 #include "Util/StaticArray.hxx"
+#include <iostream> // Have to include this for boost. I do not understand
+                    // why!
 
 #include <boost/geometry/geometries/register/ring.hpp>
 #include <boost/geometry/geometries/polygon.hpp>
