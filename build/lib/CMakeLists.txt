@@ -220,6 +220,7 @@ set(MATH_SRCS
               ${MATH_DIR}/Histogram.cpp)
 include_directories(${XCSOAR_SRC} ${MATH_DIR} ${OUTPUT_INCLUDE})
 add_library(Math ${MATH_SRCS})
+add_dependencies(Math generate)
 
 set(NET_SRCS
              ${XCSOAR_SRC}/Net/State.cpp
