@@ -691,7 +691,7 @@ set(XCSOAR_SRCS
                 ${XCSOAR_SRC}/Weather/NOAADownloader.cpp
                 ${XCSOAR_SRC}/Weather/NOAAStore.cpp
                 ${XCSOAR_SRC}/Weather/NOAAUpdater.cpp
-                ${XCSOAR_SRC}/Tracking/LiveTrack24/Client.cpp
+                ${XCSOAR_SRC}/Tracking/LiveTrack24.cpp
                 ${XCSOAR_SRC}/Tracking/SkyLines/Client.cpp
                 ${XCSOAR_SRC}/Tracking/SkyLines/Assemble.cpp
                 ${XCSOAR_SRC}/Tracking/SkyLines/Key.cpp
