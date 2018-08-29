@@ -504,7 +504,6 @@ set(XCSOAR_SRCS
                 ${XCSOAR_SRC}/Screen/TerminalWindow.cpp
                 ${XCSOAR_SRC}/Look/FontDescription.cpp
                 ${XCSOAR_SRC}/Look/GlobalFonts.cpp
-                ${XCSOAR_SRC}/Look/AutoFont.cpp
                 ${XCSOAR_SRC}/Look/DefaultFonts.cpp
                 ${XCSOAR_SRC}/Polar/PolarGlue.cpp
                 ${XCSOAR_SRC}/Polar/PolarFileGlue.cpp
