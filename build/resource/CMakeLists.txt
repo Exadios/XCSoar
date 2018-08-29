@@ -134,6 +134,7 @@ foreach(icon IN LISTS ICONS)
   # convert to uncompressed 8-bit BMP
                      COMMAND convert ${fqd}_tile.png +dither -compress none -type optimize -colors 256 bmp3:${fqd}.bmp
                      COMMAND convert ${fqd}_tile.png +dither -compress none -type optimize -colors 256 bmp3:${fqd}_160.bmp
+                    DEPENDS ${fqd}.svg
                     )
   set(fr ${fr} ${fqd}.png ${fqd}_160.png ${fqd}_alpha.png ${fqd}_rgb.png ${fqd}_tile.png ${fqd}.bmp ${fqd}_160.bmp)
 endforeach(icon)
@@ -531,7 +532,9 @@ set(GRAPHICS2      logo_160
    )
 foreach(icon IN LISTS ICONS2)
   add_custom_command(OUTPUT ${OUT_DATA}/icons2/${icon}.png
-                     COMMAND convert ${OUT_DATA}/icons/${icon}.bmp ${OUT_DATA}/icons2/${icon}.png)
+                     COMMAND convert ${OUT_DATA}/icons/${icon}.bmp ${OUT_DATA}/icons2/${icon}.png
+                     DEPENDS ${OUT_DATA}/icons/${icon}.bmp
+                    )
   set(fr ${fr} ${OUT_DATA}/icons2/${icon}.png)
 endforeach(icon)
 foreach(graphic IN LISTS GRAPHICS2)
