@@ -699,38 +699,38 @@ set(XCSOAR_SRCS
                 ${XCSOAR_SRC}/Audio/VarioGlue.cpp
                 )
 
-add_executable(xcsoar ${XCSOAR_SRCS})
-add_dependencies(xcsoar tools generate lib)
-target_link_libraries(xcsoar
-                            Profile
-                            Terrain
-                            Widget
-                            Form
-                            Datafield
-                            Screen
-                            Event
-                            Resource
-                            Resources
-                            Async
-                            Airspace
-                            Audio
-                            Contest
-                            Driver
-                            Task
-                            Geo
-                            Glide
-                            Io
-                            Math
-                            Net
-                            Route
-                            Shape
-                            Thread
-                            Util
-                            Waypoint
-                            Lua
-                            Look
+add_executable(xcsoar-${T} ${XCSOAR_SRCS})
+add_dependencies(xcsoar-${T} tools generate lib-${T})
+target_link_libraries(xcsoar-${T}
+                            Profile-${T}
+                            Terrain-${T}
+                            Widget-${T}
+                            Form-${T}
+                            Datafield-${T}
+                            Screen-${T}
+                            Event-${T}
+                            Resource-${T}
+                            Resources-${T}
+                            Async-${T}
+                            Airspace-${T}
+                            Audio-${T}
+                            Contest-${T}
+                            Driver-${T}
+                            Task-${T}
+                            Geo-${T}
+                            Glide-${T}
+                            Io-${T}
+                            Math-${T}
+                            Net-${T}
+                            Route-${T}
+                            Shape-${T}
+                            Thread-${T}
+                            Util-${T}
+                            Waypoint-${T}
+                            Lua-${T}
+                            Look-${T}
+                            Os-${T}
                             Data
-                            Os
                             pthread
                             rt
                             m
@@ -744,4 +744,7 @@ target_link_libraries(xcsoar
                             curl
                             asound
                             z
-                            lua5.2)
+                            lua5.2
+                            asan
+                            tsan
+                            lsan)

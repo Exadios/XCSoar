@@ -12,3 +12,8 @@ add_subdirectory(./generate)
 add_definitions(${BOOST_CPPFLAGS})
 add_subdirectory(./lib)
 add_subdirectory(./src)
+
+# Patch panel
+add_custom_target(release  DEPENDS lib-release xcsoar-release)
+add_custom_target(debug    DEPENDS lib-debug xcsoar-debug)
+add_custom_target(sanitize DEPENDS lib-sanitize xcsoar-sanitize)
